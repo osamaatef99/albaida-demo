@@ -111,6 +111,7 @@
   function renderCart() {
     var ids = Object.keys(cart), n = 0; ids.forEach(function (i) { n += cart[i].q; });
     var cc = $('#cartCount'); if (cc) cc.textContent = n;
+    var cbn = $('#cartBtn'); if (cbn) cbn.setAttribute('aria-label', (isAr ? 'قائمة الطلب ' : 'Request list ') + n);
     if (!cl) return;
     cl.textContent = ''; if (ce) ce.hidden = ids.length > 0;
     ids.forEach(function (id) {
