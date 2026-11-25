@@ -208,6 +208,45 @@
   }
   renderCart(); renderRecent();
 
+
+  // ---- home slider
+  var sld = $('#slider');
+  if (sld) {
+    var slides = $$('.slide', sld), dots = $$('.dot', sld), idx = 0, timer = null, paused = false;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function show(i) {
+      idx = (i + slides.length) % slides.length;
+      slides.forEach(function (s, k) { s.hidden = k !== idx; });
+      dots.forEach(function (d, k) { d.setAttribute('aria-pressed', k === idx ? 'true' : 'false'); });
+    }
+    function start() { stop(); if (!paused && !reduce) timer = setInterval(function () { show(idx + 1); }, 6000); }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    $('#slPrev').addEventListener('click', function () { show(idx - 1); start(); });
+    $('#slNext').addEventListener('click', function () { show(idx + 1); start(); });
+    dots.forEach(function (d, k) { d.addEventListener('click', function () { show(k); start(); }); });
+    var sp = $('#slPause');
+    sp.addEventListener('click', function () { paused = !paused; sp.setAttribute('aria-pressed', paused ? 'true' : 'false'); sp.textContent = paused ? '▶' : '⏸'; if (paused) stop(); else start(); });
+    sld.addEventListener('focusin', stop); sld.addEventListener('mouseenter', stop);
+    sld.addEventListener('focusout', start); sld.addEventListener('mouseleave', start);
+    if (reduce) { paused = true; sp.setAttribute('aria-pressed', 'true'); sp.textContent = '▶'; }
+    start();
+  }
+  // ---- home tabs
+  var tabs = $$('.tab');
+  if (tabs.length) {
+    function selTab(k, focus) {
+      tabs.forEach(function (t, j) { var on = j === k; t.setAttribute('aria-selected', on ? 'true' : 'false'); t.tabIndex = on ? 0 : -1; $('#' + t.getAttribute('aria-controls')).hidden = !on; if (on && focus) t.focus(); });
+    }
+    tabs.forEach(function (t, k) {
+      t.addEventListener('click', function () { selTab(k); });
+      t.addEventListener('keydown', function (e) {
+        var d = document.documentElement.dir === 'rtl' ? -1 : 1;
+        if (e.key === 'ArrowRight') { e.preventDefault(); selTab((k + d + tabs.length) % tabs.length, true); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); selTab((k - d + tabs.length) % tabs.length, true); }
+      });
+    });
+  }
+
   // ---- products filters
   var grid = $('#grid'), applyFilters;
   if (grid) {
