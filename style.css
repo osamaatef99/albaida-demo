@@ -107,4 +107,4 @@ input,select,textarea{font:inherit;color:var(--ink);padding:10px 12px;border:1px
 .qty{display:flex;align-items:center;gap:6px}
 .qty button{width:36px;height:36px;border-radius:8px;border:1px solid var(--p);background:var(--card);color:var(--pd);font-size:18px;cursor:pointer}
 [hidden]{display:none!important}
-@media print{body *{visibility:hidden}#drawer,#drawer *{visibility:visible}#drawer{position:static;background:none}.icon-btn,.actions,.notice,.field,.radios{display:none!important}}
+@media print{body>*:not(#drawer){display:none!important}#drawer{position:static;background:none;display:block}#drawer[hidden]{display:none!important}.drawer-panel{height:auto;width:100%;overflow:visible;padding:0}.icon-btn,.actions,.notice,.field,.radios,.qty button{display:none!important}}
