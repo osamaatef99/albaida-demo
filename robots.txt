@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://osamaatef99.github.io/albaida-demo/sitemap.xml
