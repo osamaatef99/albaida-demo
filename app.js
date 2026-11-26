@@ -9,14 +9,16 @@
     remove: 'إزالة', added: 'تمت الإضافة إلى القائمة', cleared: 'تم المسح', sar: 'ر.س', inc: 'زيادة', dec: 'إنقاص',
     bmi: ['نقص في الوزن', 'وزن ضمن النطاق المعتاد', 'زيادة في الوزن', 'سمنة'], bmiN: 'مؤشر تقريبي للمعلومات فقط. اسأل الصيدلي أو الطبيب.',
     water: 'تقدير تقريبي', bad: 'أدخل قيمًا صحيحة', due: 'التاريخ التقريبي', dueN: 'تقدير فقط. راجع طبيبك.', ask: 'مرحبًا، أود سؤال الصيدلي عن: ',
-    t1: 'اقتراح: ', save: 'حفظ', unsave: 'إزالة الحفظ', dark: 'الوضع الداكن', light: 'الوضع الفاتح'
+    t1: 'اقتراح: ', save: 'حفظ', unsave: 'إزالة الحفظ', dark: 'الوضع الداكن', light: 'الوضع الفاتح',
+    pause: 'إيقاف التبديل التلقائي', resume: 'تشغيل التبديل التلقائي'
   } : {
     noNum: 'Demo mode: WhatsApp number not set. Message copied instead.', copied: 'List copied', hello: 'Hello, I would like to request these products:',
     qty: 'Qty', branch: 'Branch', recv: 'Receiving', pickup: 'Pick up at branch', delivery: 'Delivery request', results: function (n) { return n + (n === 1 ? ' product' : ' products'); },
     remove: 'Remove', added: 'Added to your list', cleared: 'Cleared', sar: 'SAR', inc: 'Increase', dec: 'Decrease',
     bmi: ['Below the usual range', 'Within the usual range', 'Above the usual range', 'Well above the usual range'], bmiN: 'Rough guide for information only. Ask the pharmacist or doctor.',
     water: 'Rough estimate', bad: 'Please enter valid values', due: 'Approximate date', dueN: 'Estimate only. Check with your doctor.', ask: 'Hello, I would like to ask the pharmacist about: ',
-    t1: 'Suggestion: ', save: 'Save', unsave: 'Remove from saved', dark: 'Dark mode', light: 'Light mode'
+    t1: 'Suggestion: ', save: 'Save', unsave: 'Remove from saved', dark: 'Dark mode', light: 'Light mode',
+    pause: 'Pause auto-rotation', resume: 'Resume auto-rotation'
   };
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -42,8 +44,16 @@
 
   // mobile menu
   var mb = $('#menuBtn'), nav = $('#nav');
+  function setMenu(o) { if (!mb || !nav) return; nav.classList.toggle('open', o); mb.setAttribute('aria-expanded', o ? 'true' : 'false'); }
   if (mb && nav) {
-    mb.addEventListener('click', function () { var o = nav.classList.toggle('open'); mb.setAttribute('aria-expanded', o ? 'true' : 'false'); });
+    mb.addEventListener('click', function () { setMenu(!nav.classList.contains('open')); });
+    nav.addEventListener('click', function (e) { if (e.target.closest('a') && nav.classList.contains('open')) setMenu(false); });
+    if (window.matchMedia) { var dm = matchMedia('(min-width: 1000px)'); var onDm = function (e) { if (e.matches) setMenu(false); }; if (dm.addEventListener) dm.addEventListener('change', onDm); else if (dm.addListener) dm.addListener(onDm); }
+    document.addEventListener('click', function (e) {
+      if (!nav.classList.contains('open')) return;
+      if (nav.contains(e.target) || mb.contains(e.target)) return;
+      setMenu(false);
+    });
   }
 
   // Riyadh open/closed
@@ -131,8 +141,8 @@
     if (cart[id]) { if (cart[id].q < 99) cart[id].q++; } else cart[id] = { q: 1, ar: ar.slice(0, 80), en: en.slice(0, 80) };
     save(); toast(T.added);
   }
-  function openDrawer(el) { lastFocus = document.activeElement; el.hidden = false; var f = $('button', el); if (f) f.focus(); }
-  function closeDrawer(el) { el.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function openDrawer(el) { lastFocus = document.activeElement; el.hidden = false; document.body.style.overflow = 'hidden'; var f = $('button', el); if (f) f.focus(); }
+  function closeDrawer(el) { el.hidden = true; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   var cb = $('#cartBtn');
   if (cb && drawer) {
     cb.addEventListener('click', function () { openDrawer(drawer); });
@@ -224,11 +234,36 @@
     $('#slPrev').addEventListener('click', function () { show(idx - 1); start(); });
     $('#slNext').addEventListener('click', function () { show(idx + 1); start(); });
     dots.forEach(function (d, k) { d.addEventListener('click', function () { show(k); start(); }); });
+    // swipe / drag to flip (touch + mouse) and keyboard arrows
+    var track = $('.slides', sld), swiped = false;
+    if (track) {
+      var px = 0, py = 0, pid = null;
+      track.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        pid = e.pointerId; px = e.clientX; py = e.clientY; stop();
+      });
+      track.addEventListener('pointerup', function (e) {
+        if (pid === null || e.pointerId !== pid) return;
+        pid = null;
+        var dx = e.clientX - px, dy = e.clientY - py;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { swiped = true; show(dx < 0 ? idx + 1 : idx - 1); }
+        start();
+      });
+      track.addEventListener('pointercancel', function () { pid = null; start(); });
+      track.addEventListener('click', function (e) { if (swiped) { e.preventDefault(); e.stopPropagation(); swiped = false; } }, true);
+    }
+    sld.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      e.preventDefault();
+      var d = document.documentElement.dir === 'rtl' ? -1 : 1;
+      show(e.key === 'ArrowLeft' ? idx - d : idx + d); start();
+    });
     var sp = $('#slPause');
-    sp.addEventListener('click', function () { paused = !paused; sp.setAttribute('aria-pressed', paused ? 'true' : 'false'); sp.textContent = paused ? '▶' : '⏸'; if (paused) stop(); else start(); });
+    sp.addEventListener('click', function () { paused = !paused; sp.setAttribute('aria-pressed', paused ? 'true' : 'false'); sp.setAttribute('aria-label', paused ? T.resume : T.pause); sp.textContent = paused ? '▶' : '⏸'; if (paused) stop(); else start(); });
     sld.addEventListener('focusin', stop); sld.addEventListener('mouseenter', stop);
     sld.addEventListener('focusout', start); sld.addEventListener('mouseleave', start);
-    if (reduce) { paused = true; sp.setAttribute('aria-pressed', 'true'); sp.textContent = '▶'; }
+    if (reduce) { paused = true; sp.setAttribute('aria-pressed', 'true'); sp.setAttribute('aria-label', T.resume); sp.textContent = '▶'; }
     start();
   }
   // ---- home tabs
