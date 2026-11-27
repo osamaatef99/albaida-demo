@@ -23,8 +23,8 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest-en.webmanifest">
-<link rel="stylesheet" href="style.css?v=7">
-<script src="theme.js?v=7"></script>
+<link rel="stylesheet" href="style.css?v=8">
+<script src="theme.js?v=8"></script>
 <script type="application/ld+json">{
  "@context": "https://schema.org",
  "@graph": [
@@ -110,13 +110,13 @@
 </nav>
 </div>
 </header>
-<main id="main" tabindex="-1"><section class="page-hero"><div class="wrap"><h1>Pharmacist guide</h1><p>Two simple questions, no health data.</p></div></section>
+<main id="main" tabindex="-1"><noscript><div class="wrap"><p class="notice">The request list and the health tools need JavaScript. You can still browse products, branches and the FAQ without it.</p></div></noscript><section class="page-hero"><div class="wrap"><h1>Pharmacist guide</h1><p>Two simple questions, no health data.</p></div></section>
 <section class="section"><div class="wrap narrow">
 <p class="notice">This tool does not diagnose or recommend treatment. It only suggests a shelf to browse; the pharmacist gives the advice.</p>
 <form id="finderForm" class="card form" novalidate>
 <fieldset class="radios"><legend>1) Who is it for?</legend><label class="opt"><input type="radio" name="who" value="me"> <span>For me</span></label><label class="opt"><input type="radio" name="who" value="child"> <span>For a child</span></label><label class="opt"><input type="radio" name="who" value="family"> <span>For my family</span></label></fieldset>
 <fieldset class="radios"><legend>2) What is your main interest?</legend><label class="opt"><input type="radio" name="goal" value="immunity" data-label="Immunity support"> <span>Immunity support</span></label><label class="opt"><input type="radio" name="goal" value="hair" data-label="Hair care"> <span>Hair care</span></label><label class="opt"><input type="radio" name="goal" value="skin" data-label="Skin care"> <span>Skin care</span></label><label class="opt"><input type="radio" name="goal" value="sports" data-label="Active life and sports"> <span>Active life and sports</span></label><label class="opt"><input type="radio" name="goal" value="diabetes" data-label="Home glucose monitoring"> <span>Home glucose monitoring</span></label><label class="opt"><input type="radio" name="goal" value="kids" data-label="Baby and kids needs"> <span>Baby and kids needs</span></label></fieldset>
-<small class="err" id="fErr" hidden>Please answer both questions</small>
+<small class="err" id="fErr" role="alert" hidden>Please answer both questions</small>
 <div class="actions"><button class="btn" type="submit">Show suggestion</button></div>
 </form>
 <div id="finderResult" class="card" hidden aria-live="polite"><h2 id="fTitle"></h2><p id="fText"></p>
@@ -170,6 +170,6 @@
 <button type="button" class="btn ghost" id="pmAsk"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#i-chat"/></svg> Ask the pharmacist</button></div>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=7" defer></script>
+<script src="app.js?v=8" defer></script>
 </body>
 </html>

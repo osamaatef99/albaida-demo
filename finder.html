@@ -23,8 +23,8 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest-ar.webmanifest">
-<link rel="stylesheet" href="style.css?v=7">
-<script src="theme.js?v=7"></script>
+<link rel="stylesheet" href="style.css?v=8">
+<script src="theme.js?v=8"></script>
 <script type="application/ld+json">{
  "@context": "https://schema.org",
  "@graph": [
@@ -110,13 +110,13 @@
 </nav>
 </div>
 </header>
-<main id="main" tabindex="-1"><section class="page-hero"><div class="wrap"><h1>اسأل الصيدلي</h1><p>سؤالان بسيطان، من غير أي بيانات صحية.</p></div></section>
+<main id="main" tabindex="-1"><noscript><div class="wrap"><p class="notice">لتعمل قائمة الطلب والأدوات، يحتاج المتصفح إلى تشغيل JavaScript. يمكنك تصفح المنتجات والفروع والأسئلة الشائعة بدونه.</p></div></noscript><section class="page-hero"><div class="wrap"><h1>اسأل الصيدلي</h1><p>سؤالان بسيطان، من غير أي بيانات صحية.</p></div></section>
 <section class="section"><div class="wrap narrow">
 <p class="notice">هذه الأداة لا تشخّص ولا تصف علاجًا. تقترح قسمًا للتصفح فقط، والصيدلي هو من يقدّم المشورة.</p>
 <form id="finderForm" class="card form" novalidate>
 <fieldset class="radios"><legend>1) لمن تبحث؟</legend><label class="opt"><input type="radio" name="who" value="me"> <span>لي</span></label><label class="opt"><input type="radio" name="who" value="child"> <span>لطفل</span></label><label class="opt"><input type="radio" name="who" value="family"> <span>لأسرتي</span></label></fieldset>
 <fieldset class="radios"><legend>2) ما اهتمامك الأساسي؟</legend><label class="opt"><input type="radio" name="goal" value="immunity" data-label="دعم المناعة"> <span>دعم المناعة</span></label><label class="opt"><input type="radio" name="goal" value="hair" data-label="العناية بالشعر"> <span>العناية بالشعر</span></label><label class="opt"><input type="radio" name="goal" value="skin" data-label="العناية بالبشرة"> <span>العناية بالبشرة</span></label><label class="opt"><input type="radio" name="goal" value="sports" data-label="نشاط ورياضة"> <span>نشاط ورياضة</span></label><label class="opt"><input type="radio" name="goal" value="diabetes" data-label="متابعة السكر في المنزل"> <span>متابعة السكر في المنزل</span></label><label class="opt"><input type="radio" name="goal" value="kids" data-label="احتياجات الأطفال"> <span>احتياجات الأطفال</span></label></fieldset>
-<small class="err" id="fErr" hidden>اختر إجابة لكل سؤال</small>
+<small class="err" id="fErr" role="alert" hidden>اختر إجابة لكل سؤال</small>
 <div class="actions"><button class="btn" type="submit">اعرض الاقتراح</button></div>
 </form>
 <div id="finderResult" class="card" hidden aria-live="polite"><h2 id="fTitle"></h2><p id="fText"></p>
@@ -170,6 +170,6 @@
 <button type="button" class="btn ghost" id="pmAsk"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#i-chat"/></svg> اسأل الصيدلي</button></div>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=7" defer></script>
+<script src="app.js?v=8" defer></script>
 </body>
 </html>
