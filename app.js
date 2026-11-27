@@ -10,7 +10,8 @@
     bmi: ['نقص في الوزن', 'وزن ضمن النطاق المعتاد', 'زيادة في الوزن', 'سمنة'], bmiN: 'مؤشر تقريبي للمعلومات فقط. اسأل الصيدلي أو الطبيب.',
     water: 'تقدير تقريبي', bad: 'أدخل قيمًا صحيحة', due: 'التاريخ التقريبي', dueN: 'تقدير فقط. راجع طبيبك.', ask: 'مرحبًا، أود سؤال الصيدلي عن: ',
     t1: 'اقتراح: ', save: 'حفظ', unsave: 'إزالة الحفظ', dark: 'الوضع الداكن', light: 'الوضع الفاتح',
-    pause: 'إيقاف التبديل التلقائي', resume: 'تشغيل التبديل التلقائي'
+    pause: 'إيقاف التبديل التلقائي', resume: 'تشغيل التبديل التلقائي',
+    sm: 'نموذجي', est: 'المجموع التقريبي (أسعار نموذجية)'
   } : {
     noNum: 'Demo mode: WhatsApp number not set. Message copied instead.', copied: 'List copied', hello: 'Hello, I would like to request these products:',
     qty: 'Qty', branch: 'Branch', recv: 'Receiving', pickup: 'Pick up at branch', delivery: 'Delivery request', results: function (n) { return n + (n === 1 ? ' product' : ' products'); },
@@ -18,7 +19,8 @@
     bmi: ['Below the usual range', 'Within the usual range', 'Above the usual range', 'Well above the usual range'], bmiN: 'Rough guide for information only. Ask the pharmacist or doctor.',
     water: 'Rough estimate', bad: 'Please enter valid values', due: 'Approximate date', dueN: 'Estimate only. Check with your doctor.', ask: 'Hello, I would like to ask the pharmacist about: ',
     t1: 'Suggestion: ', save: 'Save', unsave: 'Remove from saved', dark: 'Dark mode', light: 'Light mode',
-    pause: 'Pause auto-rotation', resume: 'Resume auto-rotation'
+    pause: 'Pause auto-rotation', resume: 'Resume auto-rotation',
+    sm: 'sample', est: 'Estimated total (sample prices)'
   };
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -112,6 +114,8 @@
       var v = o[id]; if (!/^P\d{3}$/.test(id) || !v) return;
       var q = parseInt(v.q, 10); if (!(q >= 1 && q <= 99)) return;
       out[id] = { q: q, ar: String(v.ar || '').slice(0, 80), en: String(v.en || '').slice(0, 80) };
+      var p = parseFloat(v.p); if (isFinite(p) && p >= 0 && p < 100000) out[id].p = p;
+      if (/^[a-z-]{2,20}$/.test(v.ic || '')) out[id].ic = v.ic;
     });
     return out;
   }
@@ -119,26 +123,49 @@
   var drawer = $('#drawer'), cl = $('#cartList'), ce = $('#cartEmpty'), lastFocus = null;
   function save() { lsSet(KEY, cart); renderCart(); }
   function renderCart() {
-    var ids = Object.keys(cart), n = 0; ids.forEach(function (i) { n += cart[i].q; });
+    var ids = Object.keys(cart), n = 0, sum = 0, priced = 0;
+    ids.forEach(function (i) { n += cart[i].q; if (typeof cart[i].p === 'number') { sum += cart[i].p * cart[i].q; priced++; } });
     var cc = $('#cartCount'); if (cc) cc.textContent = n;
     var cbn = $('#cartBtn'); if (cbn) cbn.setAttribute('aria-label', (isAr ? 'قائمة الطلب ' : 'Request list ') + n);
+    var pill = $('#cartPill'); if (pill) { pill.textContent = n; pill.hidden = n === 0; }
     if (!cl) return;
     cl.textContent = ''; if (ce) ce.hidden = ids.length > 0;
     ids.forEach(function (id) {
-      var li = document.createElement('li'), s = document.createElement('span'); s.textContent = isAr ? cart[id].ar : cart[id].en;
+      var it = cart[id], name = isAr ? it.ar : it.en;
+      var li = document.createElement('li');
+      var tile = document.createElement('span'); tile.className = 'ci'; tile.setAttribute('aria-hidden', 'true');
+      if (it.ic) {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'ic');
+        var use = document.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', '#i-' + it.ic);
+        svg.appendChild(use); tile.appendChild(svg);
+      }
+      var info = document.createElement('span'); info.className = 'cinfo';
+      var nm = document.createElement('strong'); nm.textContent = name; info.appendChild(nm);
+      if (typeof it.p === 'number') { var up = document.createElement('small'); up.className = 'muted'; up.textContent = it.p + ' ' + T.sar + ' (' + T.sm + ')'; info.appendChild(up); }
+      var side = document.createElement('span'); side.className = 'cside';
+      if (typeof it.p === 'number') { var lt = document.createElement('strong'); lt.className = 'line-total'; lt.textContent = (it.p * it.q) + ' ' + T.sar; side.appendChild(lt); }
       var qd = document.createElement('span'); qd.className = 'qty';
-      function b(txt, lab, fn) { var x = document.createElement('button'); x.type = 'button'; x.textContent = txt; x.setAttribute('aria-label', lab + ' ' + s.textContent); x.addEventListener('click', fn); return x; }
-      var num = document.createElement('strong'); num.textContent = cart[id].q;
+      function b(txt, lab, fn) { var x = document.createElement('button'); x.type = 'button'; x.textContent = txt; x.setAttribute('aria-label', lab + ' ' + name); x.addEventListener('click', fn); return x; }
+      var num = document.createElement('strong'); num.textContent = it.q;
       qd.appendChild(b('−', T.dec, function () { if (cart[id].q <= 1) delete cart[id]; else cart[id].q--; save(); }));
       qd.appendChild(num);
       qd.appendChild(b('+', T.inc, function () { if (cart[id].q < 99) cart[id].q++; save(); }));
       qd.appendChild(b('×', T.remove, function () { delete cart[id]; save(); }));
-      li.appendChild(s); li.appendChild(qd); cl.appendChild(li);
+      side.appendChild(qd);
+      li.appendChild(tile); li.appendChild(info); li.appendChild(side); cl.appendChild(li);
     });
+    var ct = $('#cartTotal'); if (ct) ct.hidden = !(ids.length && priced);
+    var cs = $('#cartSum'); if (cs) cs.textContent = sum;
   }
-  function addItem(id, ar, en) {
+  function addItem(id, ar, en, price, icn) {
     if (!/^P\d{3}$/.test(id)) return;
-    if (cart[id]) { if (cart[id].q < 99) cart[id].q++; } else cart[id] = { q: 1, ar: ar.slice(0, 80), en: en.slice(0, 80) };
+    if (cart[id]) { if (cart[id].q < 99) cart[id].q++; }
+    else {
+      var it = { q: 1, ar: ar.slice(0, 80), en: en.slice(0, 80) };
+      var p = parseFloat(price); if (isFinite(p) && p >= 0 && p < 100000) it.p = p;
+      if (/^[a-z-]{2,20}$/.test(icn || '')) it.ic = icn;
+      cart[id] = it;
+    }
     save(); toast(T.added);
   }
   function openDrawer(el) { lastFocus = document.activeElement; el.hidden = false; document.body.style.overflow = 'hidden'; var f = $('button', el); if (f) f.focus(); }
@@ -149,8 +176,9 @@
     $('#closeCart').addEventListener('click', function () { closeDrawer(drawer); });
     drawer.addEventListener('click', function (e) { if (e.target === drawer) closeDrawer(drawer); });
     function listText() {
-      var lines = [T.hello], ids = Object.keys(cart);
-      ids.forEach(function (id) { lines.push('- ' + (isAr ? cart[id].ar : cart[id].en) + ' (' + T.qty + ': ' + cart[id].q + ')'); });
+      var lines = [T.hello], ids = Object.keys(cart), sum = 0, priced = 0;
+      ids.forEach(function (id) { lines.push('- ' + (isAr ? cart[id].ar : cart[id].en) + ' (' + T.qty + ': ' + cart[id].q + ')'); if (typeof cart[id].p === 'number') { sum += cart[id].p * cart[id].q; priced++; } });
+      if (priced) lines.push(T.est + ': ' + sum + ' ' + T.sar);
       var br = $('#cartBranch'), rv = $('input[name=recv]:checked');
       lines.push(T.branch + ': ' + br.options[br.selectedIndex].text);
       lines.push(T.recv + ': ' + (rv && rv.value === 'delivery' ? T.delivery : T.pickup));
@@ -183,7 +211,7 @@
       var i = saved.indexOf(c.dataset.id); if (i > -1) saved.splice(i, 1); else saved.push(c.dataset.id);
       lsSet(FKEY, saved); cards.forEach(function (x) { if (x.dataset.id === c.dataset.id) paintFav(x); }); if (typeof applyFilters === 'function') applyFilters();
     });
-    var a = $('[data-add]', c); if (a) a.addEventListener('click', function () { addItem(c.dataset.id, c.dataset.tar, c.dataset.ten); });
+    var a = $('[data-add]', c); if (a) a.addEventListener('click', function () { addItem(c.dataset.id, c.dataset.tar, c.dataset.ten, c.dataset.price, c.dataset.icon); });
     var v = $('[data-view]', c); if (v) v.addEventListener('click', function () { openProduct(c); });
   });
 
@@ -213,7 +241,7 @@
   if (pm) {
     $('#pmClose').addEventListener('click', function () { closeDrawer(pm); });
     pm.addEventListener('click', function (e) { if (e.target === pm) closeDrawer(pm); });
-    $('#pmAdd').addEventListener('click', function () { if (cur) addItem(cur.dataset.id, cur.dataset.tar, cur.dataset.ten); });
+    $('#pmAdd').addEventListener('click', function () { if (cur) addItem(cur.dataset.id, cur.dataset.tar, cur.dataset.ten, cur.dataset.price, cur.dataset.icon); });
     $('#pmAsk').addEventListener('click', function () { if (cur) openWa(T.ask + (isAr ? cur.dataset.tar : cur.dataset.ten)); });
   }
   renderCart(); renderRecent();
